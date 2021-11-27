@@ -1,5 +1,6 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Post } from '../post.model';
 import { PostService } from '../post.service';
 
@@ -12,23 +13,39 @@ export class CreatePostsComponent implements OnInit {
 
   enteredContent = '';
   enteredTitle = '';
+  private mode = 'create';
+  private postId: string;
+  post: Post;
 
+  constructor(public postsService: PostService, public route: ActivatedRoute) { }
 
-
-  onAddPost(form: NgForm) {
+  onSavePost(form: NgForm) {
     if (form.invalid) {
       return;
     }
-    this.postsService.addPost(form.value.title, form.value.content);
+    if (this.mode === 'create') {
+      this.postsService.addPost(form.value.title, form.value.content);
+    } else {
+      this.postsService.updatePost(this.postId, form.value.title, form.value.content)
+    }
+
     form.resetForm();
   }
 
 
 
-
-  constructor(public postsService: PostService) { }
-
   ngOnInit(): void {
+    this.route.paramMap.subscribe((paraMap: ParamMap) => {
+      if (paraMap.has('postId')) {
+        this.mode = 'edit';
+        this.postId = paraMap.get('postId')
+        this.postsService.getPost(this.postId).subscribe(postData => {
+        this.post = {id: postData._id, title: postData.title, content: postData.content};
+        });
+      } else {
+        this.mode = 'create';
+        this.postId = null;
+      }
+    });
   }
-
 }

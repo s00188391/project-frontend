@@ -36,21 +36,38 @@ export class PostService {
     return this.postsUpdated.asObservable();
   }
 
+  getPost(id: string) {
+    return this.http.get<{_id: string, title: string, content: string}>("http://localhost:3000/songs/" + id)
+  }
+
   addPost(title: string, content: string) {
     const post: Post = {id: null, title: title, content: content}
-    this.http.post<{message: string}>('http://localhost:3000/songs', post)
+    this.http.post<{message: string, postId: string}>('http://localhost:3000/songs', post)
     .subscribe((responseData) => {
-      console.log(responseData.message);
+      const id = responseData.postId;
+      post.id = id;
       this.posts.push(post);
       this.postsUpdated.next([...this.posts]);
     });
   }
 
-deletePost(postId: string) {
-  this.http.delete("http://localhost:3000/songs/" + postId)
-    .subscribe(() => {
-      console.log('Deleted');
+  updatePost(id: string, title: string, content: string) {
+    const post: Post = { id: id, title: title, content: content }
+    this.http.put("http://localhost:3000/songs/" + id, post)
+    .subscribe(response => {
+      const updatedPosts = [...this.posts];
+      const oldPostIndex = updatedPosts.findIndex(p => p.id === post.id);
+      updatedPosts[oldPostIndex] = post;
+      this.posts = updatedPosts;
+      this.postsUpdated.next([...this.posts]);
     });
-}
+  }
 
-}
+  deletePost(postId: string) {
+    this.http.delete("http://localhost:3000/songs/" + postId)
+      .subscribe(() => {
+        const updatedPosts = this.posts.filter(post => post.id !== postId);
+        this.posts = updatedPosts;
+        this.postsUpdated.next([...this.posts]);
+      });
+  }}
