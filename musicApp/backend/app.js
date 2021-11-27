@@ -54,4 +54,11 @@ app.get('/songs', (req, res, next) => {
   });
 });
 
+app.delete("/songs/:id", (req, res, next) => {
+  Post.deleteOne({_id: req.params.id}).then(result => {
+    console.log(result);
+    res.status(200).json({message: 'Post Deleted'})
+  });
+});
+
 module.exports = app;
