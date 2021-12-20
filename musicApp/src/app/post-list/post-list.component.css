@@ -3,6 +3,14 @@
   margin-top: 1rem;
 }
 
+mat-paginator {
+  margin-top: 1rem;
+}
+
+mat-spinner {
+  margin: auto;
+}
+
 .info-text {
   text-align: center;
 }
